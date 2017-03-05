@@ -57,20 +57,25 @@ var buildCmd = &cobra.Command{
 			os.Exit(102)
 		}
 
+		if doDeploy && b.Config.Targets[target].Deployment == nil {
+			fmt.Printf("koncierge: target %q: --deploy requested, but no deployment in configuration", target)
+			os.Exit(103)
+		}
+
 		if err := b.Build(target); err != nil {
-			fmt.Printf("koncierge build failed: %s\n", err)
+			fmt.Printf("koncierge: build failed: %s\n", err)
 			os.Exit(200)
 		}
 
 		if doPush {
 			if err := b.Push(target); err != nil {
-				fmt.Printf("koncierge push failed: %s\n", err)
+				fmt.Printf("koncierge: push failed: %s\n", err)
 				os.Exit(210)
 			}
 
 			if doDeploy {
 				if err := b.Deploy(target); err != nil {
-					fmt.Printf("koncierge deploy failed: %s\n", err)
+					fmt.Printf("koncierge: deploy failed: %s\n", err)
 					os.Exit(220)
 				}
 			}
