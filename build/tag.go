@@ -30,7 +30,7 @@ func (b *Build) getUncachedTag(t *config.Target) (string, error) {
 		}
 
 		return strings.TrimSpace(string(out)), nil
-	case "tag-file":
+	case "from-file":
 		cnt, err := ioutil.ReadFile(filepath.Join(t.Workdir, t.TagFile))
 		if err != nil {
 			return "", err

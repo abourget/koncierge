@@ -42,9 +42,11 @@ func (b *Build) Build(target string) error {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 
+		fmt.Printf("koncierge: running build script %q\n", t.BuildScript)
+
 		err = cmd.Run()
 		if err != nil {
-			fmt.Printf("koncierge: build script %q failed: %s\n", t.BuildScript, err)
+			return fmt.Errorf("build script %q failed: %s", t.BuildScript, err)
 		}
 	}
 
@@ -53,9 +55,11 @@ func (b *Build) Build(target string) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
+	fmt.Printf("koncierge: building docker image %q\n", imageTag)
+
 	err = cmd.Run()
 	if err != nil {
-		fmt.Println("koncierge: docker build command failed:", err)
+		return fmt.Errorf("docker build command failed: %s", err)
 	}
 
 	return nil

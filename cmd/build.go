@@ -58,19 +58,19 @@ var buildCmd = &cobra.Command{
 		}
 
 		if err := b.Build(target); err != nil {
-			fmt.Printf("Build failed: %s\n", err)
+			fmt.Printf("koncierge build failed: %s\n", err)
 			os.Exit(200)
 		}
 
 		if doPush {
 			if err := b.Push(target); err != nil {
-				fmt.Printf("Push failed: %s\n", err)
+				fmt.Printf("koncierge push failed: %s\n", err)
 				os.Exit(210)
 			}
 
 			if doDeploy {
 				if err := b.Deploy(target); err != nil {
-					fmt.Printf("Deploy failed: %s\n", err)
+					fmt.Printf("koncierge deploy failed: %s\n", err)
 					os.Exit(220)
 				}
 			}
