@@ -60,6 +60,7 @@ func (b *Build) Build(target string) error {
 	}
 
 	cmd := exec.Command("docker", "build", "-t", imageTag, "-f", t.DockerfileWithDefault(), ".")
+	cmd.Env = env
 	cmd.Dir = workdir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

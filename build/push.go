@@ -20,6 +20,7 @@ func (b *Build) Push(target string) error {
 	cmd := exec.Command("docker", "push", imageTag)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	cmd.Env = os.Environ()
 
 	fmt.Printf("koncierge: pushing docker image %q\n", imageTag)
 

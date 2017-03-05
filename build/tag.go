@@ -3,6 +3,7 @@ package build
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -24,6 +25,7 @@ func (b *Build) getUncachedTag(t *config.Target) (string, error) {
 	case "", "git-short-rev":
 		cmd := exec.Command("git", "describe", "--long", "--always", "--dirty")
 		cmd.Dir = workdir
+		cmd.Env = os.Environ()
 		out, err := cmd.Output()
 		if err != nil {
 			return "", err
