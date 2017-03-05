@@ -113,26 +113,15 @@ koncierge print deployment name
 ```hcl
 target "default" {
   // Uses the build script in the current directory to build
-  build_script = "./dockerbuild.sh"
+  build_script = "./dockerbuild.sh"  // "docker build -f Dockerfile ." runs after `build_script`
   image = "localhost:5000/internal-kube1/myimage"
   tag = "from-file"
   tag_file = "VERSION.txt"
 }
 
 target "without_build_scripts" {
-  dockerfile = "Dockerfile"
-  workdir = "./docker"
-  image = "localhost:5000/internal-kube1/myimage"
-}
-
-target "with_default_values" {
-  dockerfile = "Dockerfile" // default value, used directly to build if no `build_script` is specified.
-  workdir = "."  // default value
-  tag = "git-short-rev" // default value
-  image = "localhost:5000/internal-kube1/myimage"
-}
-
-target "same_as_previous" {
+  workdir = "./docker" // defaults to "." if not specified, relative to the Konciergefile.
+  dockerfile = "Dockerfile-alternate" // defaults to "Dockerfile" if not specified
   image = "localhost:5000/internal-kube1/myimage"
 }
 
@@ -143,8 +132,9 @@ default_target = "default"  // default value, can be overridden.
 When a `build_script` is defined, the following environment variables
 are injected in the child process:
 
-* `KONCIERGE_IMAGE`, an image name, based on the current config.
-* `KONCIERGE_TAG`, a tag value, based on the current `tag` algorithm.
+* `KONCIERGE_IMAGE`, a Docker image name, based on the config.
+* `KONCIERGE_TAG`, an image tag, based on the current `tag` method.
+* `KONCIERGE_IMAGE_TAG`  has both, like `library/mongo:3.5`.
 
 ### Tag algorithms
 

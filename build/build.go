@@ -24,7 +24,7 @@ func (b *Build) Build(target string) error {
 
 	tag, err := b.getTag(t)
 	if err != nil {
-		return fmt.Errorf("could not get tag: %s", err)
+		return fmt.Errorf("unable to read tag: %s", err)
 	}
 
 	imageTag := fmt.Sprintf("%s:%s", t.Image, tag)
@@ -47,6 +47,15 @@ func (b *Build) Build(target string) error {
 		err = cmd.Run()
 		if err != nil {
 			return fmt.Errorf("build script %q failed: %s", t.BuildScript, err)
+		}
+
+		if t.Tag == "from-file" {
+			tag, err := b.getUncachedTag(t)
+			if err != nil {
+				return fmt.Errorf("unable to re-read tag: %s", err)
+			}
+			b.CachedTag = tag
+			imageTag = fmt.Sprintf("%s:%s", t.Image, tag)
 		}
 	}
 
