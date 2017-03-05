@@ -38,9 +38,9 @@ cluster.
 It helps managing authentication to different clusters, and managing
 access and port-forward to remote Docker registries.
   `,
-// Uncomment the following line if your bare application
-// has an action associated with it:
-//	Run: func(cmd *cobra.Command, args []string) { },
+	// Uncomment the following line if your bare application
+	// has an action associated with it:
+	//	Run: func(cmd *cobra.Command, args []string) { },
 }
 
 // Execute adds all child commands to the root command sets flags appropriately.
@@ -62,7 +62,7 @@ func init() {
 	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.koncierge.yaml)")
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	RootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	RootCmd.Flags().BoolP("target", "t", false, "Select target [`default`]")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -72,8 +72,8 @@ func initConfig() {
 	}
 
 	viper.SetConfigName(".koncierge") // name of config file (without extension)
-	viper.AddConfigPath("$HOME")  // adding home directory as first search path
-	viper.AutomaticEnv()          // read in environment variables that match
+	viper.AddConfigPath("$HOME")      // adding home directory as first search path
+	viper.AutomaticEnv()              // read in environment variables that match
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {

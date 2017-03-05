@@ -41,7 +41,7 @@ to quickly create a Cobra application.`,
 
 		err = conf.Validate()
 		if err != nil {
-			fmt.Printf("%q contains errors:\n\n%s\n", conf.FilePath, err.Error())
+			fmt.Printf("In %q: %s\n\n", conf.FilePath, err.Error())
 			os.Exit(1)
 		}
 

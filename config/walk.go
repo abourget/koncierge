@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 )
 
-// WalkConfig walks up the parent directories (starting from the
-// current workdir), until it finds a `.koncierge` or a
-// `Konciergefile` file, it then attempts to load that file.
+// WalkConfig walks up the directory tree (starting from the
+// current workdir), until it finds a `Konciergefile`.
+// It then attempts to load that file.
 func WalkConfig() (c *RepoConfig, err error) {
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -16,9 +16,9 @@ func WalkConfig() (c *RepoConfig, err error) {
 	}
 
 	var konciergeFilePath string
-	var previousPath string
+	previousPath := cwd
 	for {
-		konciergeFilePath = filepath.Join(cwd, "Konciergefile")
+		konciergeFilePath = filepath.Join(previousPath, "Konciergefile")
 		if _, err := os.Stat(konciergeFilePath); err == nil {
 			break
 		}
