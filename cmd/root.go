@@ -22,7 +22,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
+var cliTarget string
 
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
@@ -59,18 +59,13 @@ func init() {
 	// Cobra supports Persistent Flags, which, if defined here,
 	// will be global for your application.
 
-	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.koncierge.yaml)")
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	RootCmd.Flags().BoolP("target", "t", false, "Select target [`default`]")
+	RootCmd.Flags().StringVarP(&cliTarget, "target", "t", "", "Select target (default is `default`)")
 }
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	if cfgFile != "" { // enable ability to specify config file via flag
-		viper.SetConfigFile(cfgFile)
-	}
-
 	viper.SetConfigName(".koncierge") // name of config file (without extension)
 	viper.AddConfigPath("$HOME")      // adding home directory as first search path
 	viper.AutomaticEnv()              // read in environment variables that match

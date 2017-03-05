@@ -11,13 +11,10 @@ func TestConfig1(t *testing.T) {
 	conf, err := FromBytes([]byte(`
 
 target "default" {
-  docker {
-    build_script = "./dockerbuild.sh"
-    dockerfile_build = "Dockerfile-build"
-    dockerfile = "Dockerfile"
-    image = "localhost:5000/internal-kube1/myimage"
-    forwarder = "registry"
-  }
+  build_script = "./dockerbuild.sh"
+  dockerfile = "Dockerfile"
+  image = "localhost:5000/internal-kube1/myimage"
+  forwarder = "registry"
 
   deployment {
     cluster = "data-priv"
@@ -52,12 +49,11 @@ forwarder "ssh" {
 	require.NotNil(t, conf.Forwarders)
 
 	require.NotNil(t, conf.Targets["default"])
-	require.NotNil(t, conf.Targets["default"].Docker)
-	assert.Equal(t, conf.Targets["default"].Docker.BuildScript, "./dockerbuild.sh")
-	assert.Equal(t, conf.Targets["default"].Docker.DockerfileBuild, "Dockerfile-build")
-	assert.Equal(t, conf.Targets["default"].Docker.Dockerfile, "Dockerfile")
-	assert.Equal(t, conf.Targets["default"].Docker.Image, "localhost:5000/internal-kube1/myimage")
-	assert.Equal(t, conf.Targets["default"].Docker.Forwarder, "registry")
+	require.NotNil(t, conf.Targets["default"])
+	assert.Equal(t, conf.Targets["default"].BuildScript, "./dockerbuild.sh")
+	assert.Equal(t, conf.Targets["default"].Dockerfile, "Dockerfile")
+	assert.Equal(t, conf.Targets["default"].Image, "localhost:5000/internal-kube1/myimage")
+	assert.Equal(t, conf.Targets["default"].Forwarder, "registry")
 
 	require.NotNil(t, conf.Targets["default"].Deployment)
 	assert.Equal(t, conf.Targets["default"].Deployment.Cluster, "data-priv")
@@ -85,37 +81,27 @@ func TestConfig2(t *testing.T) {
 
 target "default" {
   // Uses the build script in the current directory to build
-  docker {
-    build_script = "./dockerbuild.sh"
-    image = "localhost:5000/internal-kube1/myimage"
-    tag = "from-file"
-    tag_file = "VERSION.txt"
-  }
+  build_script = "./dockerbuild.sh"
+  image = "localhost:5000/internal-kube1/myimage"
+  tag = "from-file"
+  tag_file = "VERSION.txt"
 }
 
 target "without_build_scripts" {
-  docker {
-    dockerfile_build = "Dockerfile-build"
-    dockerfile = "Dockerfile"
-    workdir = "./docker"
-    image = "localhost:5000/internal-kube1/myimage"
-  }
+  dockerfile = "Dockerfile"
+  workdir = "./docker"
+  image = "localhost:5000/internal-kube1/myimage"
 }
 
 target "with_default_values" {
-  docker {
-    dockerfile_build = "Dockerfile-build" // always used if present
-    dockerfile = "Dockerfile" // default value, used directly to build if no "build_script" is specified.
-    workdir = "."  // default value
-    tag = "git-short-rev" // default value
-    image = "localhost:5000/internal-kube1/myimage"
-  }
+  dockerfile = "Dockerfile" // default value, used directly to build if no "build_script" is specified.
+  workdir = "."  // default value
+  tag = "git-short-rev" // default value
+  image = "localhost:5000/internal-kube1/myimage"
 }
 
 target "same_as_previous" {
-  docker {
-    image = "localhost:5000/internal-kube1/myimage"
-  }
+  image = "localhost:5000/internal-kube1/myimage"
 }
 
 default_target = "default"  // default value, can be overridden.
@@ -128,25 +114,23 @@ default_target = "default"  // default value, can be overridden.
 	require.NotNil(t, conf.Targets)
 	require.Nil(t, conf.Forwarders)
 
-	require.NotNil(t, conf.Targets["default"])
 	assert.Len(t, conf.Targets, 4)
 
-	require.NotNil(t, conf.Targets["default"].Docker)
-	assert.Equal(t, conf.Targets["default"].Docker.BuildScript, "./dockerbuild.sh")
-	assert.Equal(t, conf.Targets["default"].Docker.Tag, "from-file")
-	assert.Equal(t, conf.Targets["default"].Docker.TagFile, "VERSION.txt")
+	require.NotNil(t, conf.Targets["default"])
+	assert.Equal(t, conf.Targets["default"].BuildScript, "./dockerbuild.sh")
+	assert.Equal(t, conf.Targets["default"].Tag, "from-file")
+	assert.Equal(t, conf.Targets["default"].TagFile, "VERSION.txt")
 
-	require.NotNil(t, conf.Targets["without_build_scripts"].Docker)
-	assert.Equal(t, conf.Targets["without_build_scripts"].Docker.DockerfileBuild, "Dockerfile-build")
-	assert.Equal(t, conf.Targets["without_build_scripts"].Docker.Dockerfile, "Dockerfile")
-	assert.Equal(t, conf.Targets["without_build_scripts"].Docker.Workdir, "./docker")
-	assert.Equal(t, conf.Targets["without_build_scripts"].Docker.Image, "localhost:5000/internal-kube1/myimage")
+	require.NotNil(t, conf.Targets["without_build_scripts"])
+	assert.Equal(t, conf.Targets["without_build_scripts"].Dockerfile, "Dockerfile")
+	assert.Equal(t, conf.Targets["without_build_scripts"].Workdir, "./docker")
+	assert.Equal(t, conf.Targets["without_build_scripts"].Image, "localhost:5000/internal-kube1/myimage")
 
-	require.NotNil(t, conf.Targets["with_default_values"].Docker)
-	assert.Equal(t, conf.Targets["with_default_values"].Docker.Tag, "git-short-rev")
+	require.NotNil(t, conf.Targets["with_default_values"])
+	assert.Equal(t, conf.Targets["with_default_values"].Tag, "git-short-rev")
 
-	require.NotNil(t, conf.Targets["same_as_previous"].Docker)
-	assert.Equal(t, conf.Targets["same_as_previous"].Docker.Image, "localhost:5000/internal-kube1/myimage")
+	require.NotNil(t, conf.Targets["same_as_previous"])
+	assert.Equal(t, conf.Targets["same_as_previous"].Image, "localhost:5000/internal-kube1/myimage")
 
 	assert.Equal(t, conf.DefaultTarget, "default")
 }
@@ -158,17 +142,17 @@ func TestValidate(t *testing.T) {
 	assert.EqualError(t, conf.Validate(), "2 errors occurred:\n\n* no sections defined, expecting \"target\" and/or \"forwarder\" statements\n* default_target \"doesn't-exist\" specified points to an undefined target")
 
 	conf = &RepoConfig{
-		Targets: targetMap("default", &Target{Docker: &Docker{Tag: "not-supported"}}),
+		Targets: targetMap("default", &Target{Tag: "not-supported"}),
 	}
 	assert.EqualError(t, conf.Validate(), "2 errors occurred:\n\n* target \"not-supported\": tag \"default\" invalid, options are \"from-file\" and \"git-short-rev\"\n* target \"default\": docker \"image\" field required")
 
 	conf = &RepoConfig{
-		Targets: targetMap("default", &Target{Docker: &Docker{Image: "img", Forwarder: "not-defined"}}),
+		Targets: targetMap("default", &Target{Image: "img", Forwarder: "not-defined"}),
 	}
 	assert.EqualError(t, conf.Validate(), "1 error occurred:\n\n* target \"default\": forwarder \"not-defined\" not defined")
 
 	conf = &RepoConfig{
-		Targets: targetMap("default", &Target{Docker: &Docker{Image: "img", Tag: "from-file", TagFile: ""}}),
+		Targets: targetMap("default", &Target{Image: "img", Tag: "from-file", TagFile: ""}),
 	}
 	assert.EqualError(t, conf.Validate(), "1 error occurred:\n\n* target \"default\": \"tag_file\" missing (as \"tag\" is \"from-file\")")
 

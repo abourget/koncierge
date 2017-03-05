@@ -26,12 +26,10 @@ With this `Konciergefile` file:
 ```hcl
 
 target "default" {
-  docker {
-    build_script = "./dockerbuild.sh"
-    image = "123123123123213.dkr.ecr.amazonaws.com/data-priv/myproject"
-    auth = "aws-ecr"
-    forwarder = "ssh"
-  }
+  build_script = "./dockerbuild.sh"
+  image = "123123123123213.dkr.ecr.amazonaws.com/data-priv/myproject"
+  auth = "aws-ecr"
+  forwarder = "ssh"
 
   deployment {
     cluster = "data-priv"
@@ -68,17 +66,11 @@ With such a `Konciergefile` file:
 
 
 ```hcl
-build "default" {
-  script = "./dockerbuild.sh"
-}
 
 target "default" {
-  docker {
-    buildfile = "Dockerfile-build"
-    imagefile = "Dockerfile"
-    image = "localhost:5000/internal-kube1/myimage"
-    forwarder = "registry"
-  }
+  build_script = "./dockerbuild.sh"
+  image = "localhost:5000/internal-kube1/myimage"
+  forwarder = "registry"
 
   deployment {
     cluster = "data-priv"
@@ -97,6 +89,7 @@ forwarder "registry" {
 }
 
 forwarder "dw" {
+  cluster = "data-priv"
   pod = "app=goflow-dw"
   port = 7777
 }
@@ -108,10 +101,11 @@ One can run those commands fruitfully:
 koncierge fwd dw
 koncierge build --push --deploy
 koncierge push --deploy
+koncierge deploy
 koncierge print fwd dw pod  # prints `goflow-dw-12345123412-eifje`
 koncierge print fwd dw namespace  # prints `default`
-koncierge print target default docker image
-koncierge print target default deployment name
+koncierge -t second_target print image
+koncierge print deployment name
 ```
 
 ### Third example - build steps
@@ -119,38 +113,27 @@ koncierge print target default deployment name
 ```hcl
 target "default" {
   // Uses the build script in the current directory to build
-  docker {
-    build_script = "./dockerbuild.sh"
-    tagging_method = "git-short-revision"
-    image = "localhost:5000/internal-kube1/myimage"
-    tag = "from-file"
-    tag_file = "VERSION.txt"
-  }
+  build_script = "./dockerbuild.sh"
+  image = "localhost:5000/internal-kube1/myimage"
+  tag = "from-file"
+  tag_file = "VERSION.txt"
 }
 
 target "without_build_scripts" {
-  docker {
-    dockerfile_build = "Dockerfile-build"
-    dockerfile = "Dockerfile"
-    workdir = "./docker"
-    image = "localhost:5000/internal-kube1/myimage"
-  }
+  dockerfile = "Dockerfile"
+  workdir = "./docker"
+  image = "localhost:5000/internal-kube1/myimage"
 }
 
 target "with_default_values" {
-  docker {
-    dockerfile_build = "Dockerfile-build" // always used if present
-    dockerfile = "Dockerfile" // default value, used directly to build if no `build_script` is specified.
-    workdir = "."  // default value
-    tag = "git-short-rev" // default value
-    image = "localhost:5000/internal-kube1/myimage"
-  }
+  dockerfile = "Dockerfile" // default value, used directly to build if no `build_script` is specified.
+  workdir = "."  // default value
+  tag = "git-short-rev" // default value
+  image = "localhost:5000/internal-kube1/myimage"
 }
 
 target "same_as_previous" {
-  docker {
-    image = "localhost:5000/internal-kube1/myimage"
-  }
+  image = "localhost:5000/internal-kube1/myimage"
 }
 
 default_target = "default"  // default value, can be overridden.

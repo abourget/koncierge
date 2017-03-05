@@ -17,25 +17,6 @@ type RepoConfig struct {
 	FilePath string `hcl:"-"`
 }
 
-type Target struct {
-	Docker     *Docker     `hcl:"docker"`
-	Deployment *Deployment `hcl:"deployment"`
-}
-
-type Docker struct {
-	Workdir string `hcl:"workdir"`
-
-	DockerfileBuild string `hcl:"dockerfile_build"`
-	Dockerfile      string `hcl:"dockerfile"`
-	BuildScript     string `hcl:"build_script"`
-
-	Image   string `hcl:"image"`
-	Tag     string `hcl:"tag"` // 'from-file', 'git-short-rev'
-	TagFile string `hcl:"tag_file"`
-
-	Forwarder string `hcl:"forwarder"`
-}
-
 type Deployment struct {
 	Cluster   string `hcl:"cluster"`
 	Namespace string `hcl:"namespace"`
@@ -92,26 +73,24 @@ func (c *RepoConfig) Validate() (out error) {
 	}
 	if c.Targets != nil {
 		for targetName, target := range c.Targets {
-			if target.Docker != nil {
-				tag := target.Docker.Tag
-				switch tag {
-				case "git-short-rev", "from-file", "":
-				default:
-					out = multierror.Append(out, fmt.Errorf(`target %q: tag %q invalid, options are "from-file" and "git-short-rev"`, tag, targetName))
-				}
+			tag := target.Tag
+			switch tag {
+			case "git-short-rev", "from-file", "":
+			default:
+				out = multierror.Append(out, fmt.Errorf(`target %q: tag %q invalid, options are "from-file" and "git-short-rev"`, tag, targetName))
+			}
 
-				if tag == "from-file" && target.Docker.TagFile == "" {
-					out = multierror.Append(out, fmt.Errorf(`target %q: "tag_file" missing (as "tag" is "from-file")`, targetName))
-				}
+			if tag == "from-file" && target.TagFile == "" {
+				out = multierror.Append(out, fmt.Errorf(`target %q: "tag_file" missing (as "tag" is "from-file")`, targetName))
+			}
 
-				forwarder := target.Docker.Forwarder
-				if forwarder != "" && (c.Forwarders == nil || c.Forwarders[forwarder] == nil) {
-					out = multierror.Append(out, fmt.Errorf(`target %q: forwarder %q not defined`, targetName, forwarder))
-				}
+			forwarder := target.Forwarder
+			if forwarder != "" && (c.Forwarders == nil || c.Forwarders[forwarder] == nil) {
+				out = multierror.Append(out, fmt.Errorf(`target %q: forwarder %q not defined`, targetName, forwarder))
+			}
 
-				if target.Docker.Image == "" {
-					out = multierror.Append(out, fmt.Errorf(`target %q: docker "image" field required`, targetName))
-				}
+			if target.Image == "" {
+				out = multierror.Append(out, fmt.Errorf(`target %q: docker "image" field required`, targetName))
 			}
 
 			if target.Deployment != nil {

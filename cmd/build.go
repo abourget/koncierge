@@ -18,35 +18,65 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/abourget/koncierge/build"
 	"github.com/abourget/koncierge/config"
 	"github.com/spf13/cobra"
 )
 
+var doPush bool
+var doDeploy bool
+
 // buildCmd represents the build command
 var buildCmd = &cobra.Command{
 	Use:   "build",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Build a Koncierge project",
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
+		if doDeploy && !doPush {
+			fmt.Println("Error: --deploy requires --push")
+			os.Exit(100)
+		}
+
 		conf, err := config.WalkConfig()
 		if err != nil {
 			fmt.Println("error loading configuration:", err)
-			os.Exit(1)
+			os.Exit(101)
 		}
 
 		err = conf.Validate()
 		if err != nil {
 			fmt.Printf("In %q: %s\n\n", conf.FilePath, err.Error())
-			os.Exit(1)
+			os.Exit(101)
 		}
 
-		// TODO: Work your own magic here
-		fmt.Println("build called")
+		b := build.New(conf)
+
+		target, err := b.TargetWithDefault(cliTarget)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(102)
+		}
+
+		if err := b.Build(target); err != nil {
+			fmt.Printf("Build failed: %s\n", err)
+			os.Exit(200)
+		}
+
+		if doPush {
+			if err := b.Push(target); err != nil {
+				fmt.Printf("Push failed: %s\n", err)
+				os.Exit(210)
+			}
+
+			if doDeploy {
+				if err := b.Deploy(target); err != nil {
+					fmt.Printf("Deploy failed: %s\n", err)
+					os.Exit(220)
+				}
+			}
+		}
+
+		fmt.Println("koncierge: build command terminated successfully")
 	},
 }
 
@@ -61,6 +91,7 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// buildCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	buildCmd.Flags().BoolVarP(&doPush, "push", "p", false, "Push after a successful build")
+	buildCmd.Flags().BoolVarP(&doDeploy, "deploy", "d", false, "Deploy after a successful push. Requires --push")
 
 }
