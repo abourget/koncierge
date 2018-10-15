@@ -1,6 +1,8 @@
 package build
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func (b *Build) Deploy(target string) error {
 	t := b.Config.Targets[target]
@@ -17,7 +19,12 @@ func (b *Build) Deploy(target string) error {
 	// as we'll then again, call `kubectl` to get some pod values,
 	// port-forward calls, etc..
 	imageTag := fmt.Sprintf("%s:%s", t.Image, tag)
-	return RunKubectl(t.Deployment.Cluster, t.Deployment.Namespace, []string{
-		"set", "image", t.Deployment.Name, fmt.Sprintf("%s=%s", t.Deployment.Container, imageTag),
-	})
+	return RunKubectl(
+		nil,
+		t.Deployment.Cluster,
+		t.Deployment.Namespace,
+		[]string{
+			"set", "image", t.Deployment.Name, fmt.Sprintf("%s=%s", t.Deployment.Container, imageTag),
+		},
+	)
 }

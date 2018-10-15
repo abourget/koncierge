@@ -61,7 +61,7 @@ func init() {
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	RootCmd.Flags().StringVarP(&cliTarget, "target", "t", "", "Select target (default is `default`)")
+	RootCmd.PersistentFlags().StringVarP(&cliTarget, "target", "t", "", "Select target (default is `default`)")
 }
 
 // initConfig reads in config file and ENV variables if set.

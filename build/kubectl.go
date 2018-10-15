@@ -1,27 +1,25 @@
 package build
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
-
-	"github.com/docker/docker/pkg/homedir"
 )
 
-func RunKubectl(cluster string, namespace string, args []string) error {
-
-	// TODO find  `~/.kube/[cluster]/kubeconfig|config`,
-	// craft the `kubectl` command, adding --namespace` if namespace != ""
-	// append the other params,
-	// set the right `KUBECONFIG` according to cluster configuration..
-	kubeconfPath := filepath.Join(homedir.Get(), ".kube", cluster, "config")
-	if _, err := os.Stat(kubeconfPath); err != nil {
-		return err
+func RunKubectl(ctx context.Context, cluster string, namespace string, args []string) error {
+	envVar := fmt.Sprintf("KONCIERGE_%s_KUBECONFIG", strings.Replace(strings.ToUpper(cluster), "-", "_", -1))
+	kubeconfPath := os.Getenv(envVar)
+	if kubeconfPath == "" {
+		return fmt.Errorf("couldn't find environment variable %q pointing to a KUBECONFIG file", envVar)
 	}
 
-	cmd := exec.Command("kubectl", "--kubeconfig", kubeconfPath)
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	cmd := exec.CommandContext(ctx, "kubectl", "--kubeconfig", kubeconfPath)
 	if namespace != "" {
 		cmd.Args = append(cmd.Args, "--namespace", namespace)
 	}

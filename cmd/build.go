@@ -30,13 +30,15 @@ var doDeploy bool
 var buildCmd = &cobra.Command{
 	Use:   "build",
 	Short: "Build a Koncierge project",
-	Long:  ``,
-	Run: func(cmd *cobra.Command, args []string) {
-		if doDeploy && !doPush {
-			fmt.Println("Error: --deploy requires --push")
-			os.Exit(100)
-		}
+	Long: `Example usage:
 
+    koncierge build
+    koncierge build --push
+    koncierge build --push --deploy
+    koncierge build --deploy   ; if your build script pushes automatically
+    koncierge -t prod build
+`,
+	Run: func(cmd *cobra.Command, args []string) {
 		conf, err := config.WalkConfig()
 		if err != nil {
 			fmt.Println("error loading configuration:", err)
@@ -73,11 +75,11 @@ var buildCmd = &cobra.Command{
 				os.Exit(210)
 			}
 
-			if doDeploy {
-				if err := b.Deploy(target); err != nil {
-					fmt.Printf("koncierge: deploy failed: %s\n", err)
-					os.Exit(220)
-				}
+		}
+		if doDeploy {
+			if err := b.Deploy(target); err != nil {
+				fmt.Printf("koncierge: deploy failed: %s\n", err)
+				os.Exit(220)
 			}
 		}
 
@@ -88,14 +90,6 @@ var buildCmd = &cobra.Command{
 func init() {
 	RootCmd.AddCommand(buildCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// buildCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
 	buildCmd.Flags().BoolVarP(&doPush, "push", "p", false, "Push after a successful build")
 	buildCmd.Flags().BoolVarP(&doDeploy, "deploy", "d", false, "Deploy after a successful push. Requires --push")
 

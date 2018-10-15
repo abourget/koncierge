@@ -15,6 +15,8 @@ func (b *Build) Push(target string) error {
 	}
 
 	// Check authentication before we go, or re-authenticate before we go, or CHECK that!
+	// If we requested a forwarder, DO THE FORWARDING..
+	// defer shutdownForwarder()
 
 	imageTag := fmt.Sprintf("%s:%s", t.Image, tag)
 	cmd := exec.Command("docker", "push", imageTag)
