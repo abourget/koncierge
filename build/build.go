@@ -57,19 +57,21 @@ func (b *Build) Build(target string) error {
 			b.CachedTag = tag
 			imageTag = fmt.Sprintf("%s:%s", t.Image, tag)
 		}
-	}
 
-	cmd := exec.Command("docker", "build", "-t", imageTag, "-f", t.DockerfileWithDefault(), ".")
-	cmd.Env = env
-	cmd.Dir = workdir
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	} else {
 
-	fmt.Printf("koncierge: building docker image %q\n", imageTag)
+		cmd := exec.Command("docker", "build", "-t", imageTag, "-f", t.DockerfileWithDefault(), ".")
+		cmd.Env = env
+		cmd.Dir = workdir
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
 
-	err = cmd.Run()
-	if err != nil {
-		return fmt.Errorf("docker build command failed: %s", err)
+		fmt.Printf("koncierge: building docker image %q\n", imageTag)
+
+		err = cmd.Run()
+		if err != nil {
+			return fmt.Errorf("docker build command failed: %s", err)
+		}
 	}
 
 	return nil
